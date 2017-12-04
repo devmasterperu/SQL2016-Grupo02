@@ -1,4 +1,4 @@
---Taller de Ordenamiento y Filtrado
+--Sesion02-Taller de Ordenamiento y Filtrado
 --1.Toda vez que se requiera listar los pai­ses, la base de datos debe enviar el id,
 --nombre de cada paÃ­s ordenado por nombre de manera ascendente
 --1.1 Generar sentencias en Excel para insercion.
