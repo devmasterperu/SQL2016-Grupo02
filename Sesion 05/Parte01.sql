@@ -159,4 +159,35 @@ where  moneda='SOL'
 				inner join tbCuenta cta on cli.id=cta.idCliente
 				group by idUbigeo
 			   ) resmax on resmax.idUbigeo=ubi.id
---8 
+--8     
+		--Consulta externa
+		select pdto.nombre,
+			   min(deudatotalsol) as minDeuda,
+			   max(deudatotalsol) as maxDeuda
+		from 
+		(
+		    --Consulta interna
+			select idProducto as producto,
+				   case when moneda='SOL' then deudaTotal
+						when moneda='DOL' then (select conversionSOL from tbTipoCambio where fecha='20180105')*deudaTotal
+				   end as deudatotalsol
+			from   tbCuenta
+			where  idProducto is not null
+		)   tbProductoDeudaSol
+		inner join tbProducto pdto on tbProductoDeudaSol.producto=pdto.id
+		group by pdto.nombre
+
+--9 
+--Consulta interna
+--select AVG(diasMoraNuevo) from tbCuenta
+
+--Consulta externa
+select CONCAT(nombres,' ',apellidoPat,' ', apellidoMat) as nombrecompleto,
+	   numDoc,
+	   (select AVG(diasMoraNuevo) from tbCuenta) as diasmoraprom,--Consulta interna
+	   cta.diasMoraNuevo
+from   tbCliente cli
+inner join tbTipoDocumento doc on cli.tipoDoc=doc.tipo
+inner join tbCuenta cta on cli.id=cta.idCliente
+where CONCAT(nombres,' ',apellidoPat,' ', apellidoMat)  not like '%^%' and
+      cta.diasMoraNuevo>(select AVG(diasMoraNuevo) from tbCuenta)--Consulta interna
