@@ -191,3 +191,63 @@ inner join tbTipoDocumento doc on cli.tipoDoc=doc.tipo
 inner join tbCuenta cta on cli.id=cta.idCliente
 where CONCAT(nombres,' ',apellidoPat,' ', apellidoMat)  not like '%^%' and
       cta.diasMoraNuevo>(select AVG(diasMoraNuevo) from tbCuenta)--Consulta interna
+
+--10
+select * from tbUbigeo
+--Consulta interna
+select AVG(deudavencidasol)
+from
+(
+	select case 
+	       when moneda='SOL' then deudaVencida
+		   when moneda='DOL' then (select conversionSOL from tbTipoCambio where fecha='20180105')*deudaVencida
+		   end as deudavencidasol
+	from   tbCuenta cta 
+	inner join tbCliente cte on cta.idCliente=cte.id
+	inner join tbUbigeo ubi on cte.idUbigeo=ubi.id
+	where UPPER(ubi.distrito)='HUACHO'
+) reshuacho
+--Consulta externa
+select CONCAT(nombres,' ',apellidoPat,' ', apellidoMat) as nombrecompleto,
+       doc.descripcion,
+	   cte.numDoc,
+	   (
+			select AVG(deudavencidasol)
+			from
+			(
+				select case 
+					   when moneda='SOL' then deudaVencida
+					   when moneda='DOL' then (select conversionSOL from tbTipoCambio where fecha='20180105')*deudaVencida
+					   end as deudavencidasol
+				from   tbCuenta cta 
+				inner join tbCliente cte on cta.idCliente=cte.id
+				inner join tbUbigeo ubi on cte.idUbigeo=ubi.id
+				where UPPER(ubi.distrito)='HUACHO'
+			) reshuacho
+	   ) deudavencidapromedio,
+	   case 
+			when moneda='SOL' then cta.deudaVencida
+			when moneda='DOL' then (select conversionSOL from tbTipoCambio where fecha='20180105')*cta.deudaVencida
+	   end as deudavencidasol,
+	   cta.numcuenta
+from   tbCliente cte
+inner join tbTipoDocumento doc on cte.tipoDoc=doc.tipo
+inner join tbCuenta cta on cta.idCliente=cte.id
+where  case 
+			when moneda='SOL' then cta.deudaVencida
+			when moneda='DOL' then (select conversionSOL from tbTipoCambio where fecha='20180105')*cta.deudaVencida
+	   end <   (
+					select AVG(deudavencidasol)
+					from
+					(
+						select case 
+							   when moneda='SOL' then deudaVencida
+							   when moneda='DOL' then (select conversionSOL from tbTipoCambio where fecha='20180105')*deudaVencida
+							   end as deudavencidasol
+						from   tbCuenta cta 
+						inner join tbCliente cte on cta.idCliente=cte.id
+						inner join tbUbigeo ubi on cte.idUbigeo=ubi.id
+						where UPPER(ubi.distrito)='HUACHO'
+					) reshuacho
+				) 
+order by nombrecompleto
