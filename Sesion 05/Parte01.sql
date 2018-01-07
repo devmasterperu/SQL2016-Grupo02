@@ -109,3 +109,54 @@ where  moneda='SOL'
   where  cli.nombres not like '%^%'
   order by cli.idUbigeo
 
+  --7
+  --Forma 1
+  --Consulta interna
+  --Total de clientes por ubigeo
+	select idUbigeo,count(1) as total 
+	from   tbCliente
+	group by idUbigeo
+  --Máximo días mora por ubigeo
+    select idUbigeo,max(cta.diasMoraNuevo) as MaxDiasMora 
+	from   tbCliente cli 
+	inner join tbCuenta cta on cli.id=cta.idCliente
+	group by idUbigeo
+  --Consulta externa
+    select id, 
+	       departamento,
+		   provincia,
+		   distrito,
+		   resxtotal.total,
+		   resmax.MaxDiasMora
+	from   tbUbigeo ubi
+	inner join (--Consulta interna 1
+				select idUbigeo,count(1) as total 
+				from   tbCliente
+				group by idUbigeo
+			   ) resxtotal on resxtotal.idUbigeo=ubi.id
+	inner join (--Consulta interna 2
+				select idUbigeo,max(cta.diasMoraNuevo) as MaxDiasMora 
+				from   tbCliente cli 
+				inner join tbCuenta cta on cli.id=cta.idCliente
+				group by idUbigeo
+			   ) resmax on resmax.idUbigeo=ubi.id
+
+      select id, 
+	       departamento,
+		   provincia,
+		   distrito,
+		   isnull(resxtotal.total,0) as total,
+		   isnull(resmax.MaxDiasMora,999999999) as maxDiasMora
+	from   tbUbigeo ubi
+	left join (--Consulta interna 1
+				select idUbigeo,count(1) as total 
+				from   tbCliente
+				group by idUbigeo
+			   ) resxtotal on resxtotal.idUbigeo=ubi.id
+	left join (--Consulta interna 2
+				select idUbigeo,max(cta.diasMoraNuevo) as MaxDiasMora 
+				from   tbCliente cli 
+				inner join tbCuenta cta on cli.id=cta.idCliente
+				group by idUbigeo
+			   ) resmax on resmax.idUbigeo=ubi.id
+--8 
