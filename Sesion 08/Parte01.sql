@@ -54,4 +54,41 @@ end
 execute dbo.InsProducto 'Leche Pura Vida',100,'LT.',3.5
 --Producto ingresado a las Jan 28 2018 10:00AM
 execute dbo.InsProducto 'Leche Pura Vida',100,'litro',3.5
+--3.5 Realizar la inserción de una persona en base a sus parámetros numDoc,nombres,apellidoPat,
+--apellidoMat y la descripcion corta del tipo de documento. En caso de no existir el tipo de documento
+--Imprimir un mensaje de tipo no existente++++
 
+--4 
+create procedure dbo.Upd_Persona
+(
+@idTipodDoc int,
+@numDoc varchar(15),
+@nombres varchar(100),
+@apellidoPaterno varchar(100),
+@apellidoMaterno varchar(100)
+)
+as  
+begin
+
+	declare @idPersona int
+	set @idPersona=(select id from tbPersona where idTipoDoc=@idTipodDoc and numDoc=@numDoc)
+	
+	if @idPersona is not null --Persona existe en tbPersona 
+	begin
+		
+		update pers
+		set    nombres=@nombres,
+			   apellidoPaterno=@apellidoPaterno,
+			   apellidoMaterno=@apellidoMaterno
+		from   tbPersona pers
+		where  idTipoDoc=@idTipodDoc and numDoc=@numDoc
+
+		print 'Persona actualizada a las'+cast(getdate() as varchar(10))
+
+	end
+
+end
+
+
+select * from tbPersona
+execute dbo.Upd_Persona 1,'46173384','GIANFRANCO','MANRIQUE','VALENTIN'
