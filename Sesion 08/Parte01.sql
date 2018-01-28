@@ -89,6 +89,40 @@ begin
 
 end
 
-
 select * from tbPersona
 execute dbo.Upd_Persona 1,'46173384','GIANFRANCO','MANRIQUE','VALENTIN'
+
+--4.5 Actualizar la cantidad,precioUnidad de un producto en base
+--al nombre del producto. De no existir el producto, debe realizar el guardado del registro
+--en la tabla log (nombre-producto,fecregistro)
+
+create table tbLog
+(
+nombreproducto varchar(300),
+fecregistro datetime default getdate()
+)
+
+--5 
+
+create procedure dbo.DelPersona
+(
+@idTipoDoc int,
+@numDoc varchar(15)
+)
+as
+begin
+	declare @idpersona int
+	set @idpersona=(select id from tbPersona where idTipoDoc=@idTipoDoc and numDoc=@numDoc)
+
+	if @idpersona is not null--Persona existe
+	begin
+		--Eliminacion en comprador
+		delete tbComprador where idPersona=@idpersona
+
+		print 'Registro eliminado'
+	end
+end
+execute dbo.DelPersona 1,'46173384'
+
+--5.5 Crear un SP que elimine todos las ventas con monto total menor a 40 soles
+select * from tbVenta
