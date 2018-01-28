@@ -125,4 +125,65 @@ end
 execute dbo.DelPersona 1,'46173384'
 
 --5.5 Crear un SP que elimine todos las ventas con monto total menor a 40 soles
-select * from tbVenta
+--6 
+--USE ComprasS8_2
+create procedure dbo.selReporteProductoMayorVenta
+as
+begin
+	--Obtener el nombre del producto mas vendido
+		declare @idProducto int 
+		declare @nombreProducto varchar(300)
+		declare @mtovendido decimal(10,2)
+		declare @fecprimeraventa datetime
+		declare @fecultimaventa datetime
+		--Obtencion de idproducto y mtovendido
+		select top 1 @idProducto=idProducto,@mtovendido=sum(totalDetalle) from tbVentaDetalle group by idProducto 
+
+		set @nombreProducto=(select nombre from tbProducto where id=@idProducto)
+
+		select @fecprimeraventa=min(fecRegistro), 
+		       @fecultimaventa=max(fecRegistro)
+		from tbVentaDetalle group by idProducto having idProducto=@idProducto
+
+		print @idProducto
+		print @nombreProducto
+		print @mtovendido
+
+	select 'DEV MASTER PERU SAC' as nombreEmpresa,
+	        'Reporte al '+convert(varchar(10),getdate(),103)+' '+convert(varchar(10),getdate(),14) as CabeceraReporte,
+			@nombreProducto as 'Producto + vendido',
+			@mtovendido as 'Monto Total Venta',
+			convert(varchar(10),@fecprimeraventa,103)  as 'Fecha de primera venta',
+			convert(varchar(10),@fecultimaventa,103)  as 'Fecha de ultima venta'
+end
+
+--7 Operaciones con producto de mayor monto de venta
+alter procedure dbo.selReporteDetalleProductoMayorVente
+as
+	declare @idProducto2 int 
+	declare @mtovendido2 decimal(10,2)
+	declare @nombreProducto2 varchar(300)
+	select top 1 @idProducto2=idProducto,@mtovendido2=sum(totalDetalle) from tbVentaDetalle group by idProducto 
+
+	set @nombreProducto2=(select nombre from tbProducto where id=@idProducto2)
+
+	select  'DEV MASTER PERU SAC' as nombre_empresa,
+			'11111111111' as ruc_empresa
+
+	select 'Reporte al '+convert(varchar(10),getdate(),103)+' '+convert(varchar(10),getdate(),14) as CabeceraReporte,
+			'VEN'+cast(vta.id as varchar(500)) as Venta,
+	        @nombreProducto2 as Producto,
+			vtadet.cantidad as unidades_vendidas,
+			vtadet.precioUnidad as precio_unitario,
+			vta.fecRegistro as fecha_venta
+	from    tbVenta vta 
+	inner join tbVentaDetalle vtadet on vta.id=vtadet.idCompra
+	where       vtadet.idProducto=@idProducto2
+
+execute selReporteDetalleProductoMayorVente
+
+--7.5 Elaborar un procedimiento almacenado que retorne la fecha y hora de la consulta,
+--la cantidad de compradores y la cantidad de vendedores.
+
+---Fecha Consulta---Total_compradores--Total_vendedores
+---28/01/2018 13:25 | 4				| 4
