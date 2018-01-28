@@ -186,4 +186,53 @@ execute selReporteDetalleProductoMayorVente
 --la cantidad de compradores y la cantidad de vendedores.
 
 ---Fecha Consulta---Total_compradores--Total_vendedores
----28/01/2018 13:25 | 4				| 4
+---28/01/2018 13:25 | 4				| 5
+--7.5.1 Forma sin variables
+create procedure dbo.selReporteCantidades
+as
+begin
+
+	select convert(varchar(10),getdate(),103)+' '+convert(varchar(10),getdate(),14) as fecha_consulta,
+	       (select count(1) from tbComprador) as total_compradores,
+		   (select count(1) from tbVendedor) as total_vendedores
+end
+
+execute dbo.selReporteCantidades
+--7.5.2 Forma con variables
+alter procedure dbo.selReporteCantidades2
+as
+begin
+    declare @fecha_consulta varchar(20)
+	declare @total_compradores int
+	declare @total_vendedores int
+
+	set @fecha_consulta=(select convert(varchar(10),getdate(),103)+' '+convert(varchar(10),getdate(),14))
+	set @total_compradores=(select count(1) from tbComprador)
+	set @total_vendedores=(select count(1) from tbVendedor)
+
+	select @fecha_consulta,@total_compradores as total_compradores,@total_vendedores as total_vendedores
+end
+execute dbo.selReporteCantidades2
+
+
+--8 Reporte de ventas entre fechas
+alter procedure dbo.reporteVentasPorFecha
+(
+@fecinicio varchar(8),
+@fecfin    varchar(8)
+)
+as
+begin
+		select 'VEN'+CAST(vta.id as VARCHAR(100)) as venta,
+		        total as monto_total, 
+				CONCAT(per.nombres,' ',per.apellidoPaterno,' ',per.apellidoMaterno) as nom_vendedor,
+				vta.fecRegistro
+		from tbVenta vta 
+		inner join tbVendedor vend on vta.idVendedor=vend.id
+		inner join tbPersona per on vend.idPersona=per.id
+		where convert(varchar(8),vta.fecregistro,112)>=@fecinicio and convert(varchar(8),vta.fecregistro,112)<=@fecfin
+end
+
+--8.5 Reporte de Productos (nombre,cantidad,nombre de unidad de medida) registrados entre dos fechas
+
+execute reporteVentasPorFecha '20180101','20180128'
