@@ -234,5 +234,5 @@ begin
 end
 
 --8.5 Reporte de Productos (nombre,cantidad,nombre de unidad de medida) registrados entre dos fechas
-
+ 
 execute reporteVentasPorFecha '20180101','20180128'
